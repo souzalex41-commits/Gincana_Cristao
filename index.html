@@ -283,6 +283,18 @@
     </div>
   </div>
 
+  <!-- Modal de Confirmação Genérico -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-content">
+      <h2 style="color:var(--danger);margin-bottom:1rem;" id="confirm-modal-title">Confirmar Ação</h2>
+      <p style="margin-bottom: 2rem; color: var(--text); font-size: 1.1rem;" id="confirm-modal-message">Tem certeza que deseja realizar esta ação?</p>
+      <div class="flex gap-1">
+        <button class="btn btn-danger" id="confirm-modal-yes" style="flex: 1;">Sim, Confirmar</button>
+        <button class="btn btn-outline" id="confirm-modal-no" style="flex: 1;">Não, Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

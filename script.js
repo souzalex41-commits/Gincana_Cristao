@@ -166,10 +166,10 @@ function addActivity(e) {
 }
 
 function delActivity(id) {
-  if (confirm('Excluir esta gincana?')) {
+  customConfirm('Excluir esta gincana?', () => {
     data.activities = data.activities.filter(a => a.id !== id);
     save();
-  }
+  });
 }
 
 function openActivity(id) {
@@ -276,12 +276,12 @@ function execAddScore(id, amount, event) {
 // --- Manage Logic ---
 function addTeam(e) { e.preventDefault(); const n = document.getElementById('team-name'); const c = document.getElementById('team-color'); data.teams.push({id:genId(),name:n.value,color:c.value,score:0}); n.value=''; c.value='#f97316'; save(); }
 function addPlayer(e) { e.preventDefault(); const n = document.getElementById('player-name'); const t = document.getElementById('player-team'); data.players.push({id:genId(),name:n.value,teamId:t.value||null,score:0}); n.value=''; save(); }
-function delT(id) { if(confirm('Excluir equipe?')) { data.teams=data.teams.filter(x=>x.id!==id); data.players.forEach(p=>{if(p.teamId===id)p.teamId=null;}); save(); } }
-function delP(id) { if(confirm('Excluir jogador?')) { data.players=data.players.filter(x=>x.id!==id); save(); } }
+function delT(id) { customConfirm('Excluir equipe?', () => { data.teams=data.teams.filter(x=>x.id!==id); data.players.forEach(p=>{if(p.teamId===id)p.teamId=null;}); save(); }); }
+function delP(id) { customConfirm('Excluir jogador?', () => { data.players=data.players.filter(x=>x.id!==id); save(); }); }
 
 // --- Verses Logic ---
 function addVerse(e) { e.preventDefault(); const r = document.getElementById('verse-ref'); const t = document.getElementById('verse-text'); data.verses.push({id:genId(),reference:r.value,text:t.value}); r.value=''; t.value=''; save(); }
-function delV(id) { if(confirm('Excluir versículo?')) { data.verses=data.verses.filter(x=>x.id!==id); save(); } }
+function delV(id) { customConfirm('Excluir versículo?', () => { data.verses=data.verses.filter(x=>x.id!==id); save(); }); }
 function drawVerse() {
   if(!data.verses.length) return showNotification('Cadastre versículos ou use o botão de Demo!', 'warning');
   let c=0; const int = setInterval(()=>{
@@ -293,8 +293,8 @@ function drawVerse() {
 // --- Niches Logic ---
 function addNiche(e) { e.preventDefault(); const n = document.getElementById('niche-name'); data.niches.push({id:genId(),name:n.value,items:[]}); n.value=''; save(); }
 function addNicheItem(e) { e.preventDefault(); const s = document.getElementById('item-niche-select'); const n = document.getElementById('item-name'); const nc = data.niches.find(x=>x.id===s.value); if(nc){ nc.items.push({id:genId(),name:n.value}); n.value=''; save(); } }
-function delN(id) { if(confirm('Excluir nicho?')) { data.niches=data.niches.filter(x=>x.id!==id); save(); } }
-function delNI(nId, iId) { if(confirm('Excluir este item do nicho?')) { const n = data.niches.find(x=>x.id===nId); if(n){ n.items=n.items.filter(x=>x.id!==iId); save(); } } }
+function delN(id) { customConfirm('Excluir nicho?', () => { data.niches=data.niches.filter(x=>x.id!==id); save(); }); }
+function delNI(nId, iId) { customConfirm('Excluir este item do nicho?', () => { const n = data.niches.find(x=>x.id===nId); if(n){ n.items=n.items.filter(x=>x.id!==iId); save(); } }); }
 function drawNicheItem() {
   const s = document.getElementById('draw-niche-select').value;
   const n = data.niches.find(x=>x.id===s);
@@ -332,6 +332,21 @@ function openInputM() {
   };
 }
 function closeInputM() { document.getElementById('input-modal').classList.remove('active'); }
+
+function customConfirm(message, callback) {
+  const modal = document.getElementById('confirm-modal');
+  const msgEl = document.getElementById('confirm-modal-message');
+  const yesBtn = document.getElementById('confirm-modal-yes');
+  const noBtn = document.getElementById('confirm-modal-no');
+
+  msgEl.textContent = message;
+  modal.classList.add('active');
+
+  const close = () => modal.classList.remove('active');
+
+  yesBtn.onclick = () => { close(); callback(); };
+  noBtn.onclick = close;
+}
 
 function openNicheDemoModal() { document.getElementById('niche-demo-modal').classList.add('active'); }
 function closeNicheDemoModal() { document.getElementById('niche-demo-modal').classList.remove('active'); }
@@ -383,30 +398,30 @@ function closeResetModal() {
 }
 
 function confirmReset(category, type) {
-  if (!confirm('Tem certeza? Esta ação não pode ser desfeita.')) return;
-
-  if (category === 'scores') {
-    if (type === 'teams' || type === 'all') data.teams.forEach(t => t.score = 0);
-    if (type === 'players' || type === 'all') data.players.forEach(p => p.score = 0);
-    showNotification('Pontuações zeradas com sucesso!', 'success');
-  } else if (category === 'niches_acts') {
-    if (type === 'niches' || type === 'all') data.niches = [];
-    if (type === 'acts' || type === 'all') data.activities = [];
-    showNotification('Nichos/Gincanas removidos!', 'success');
-  } else if (category === 'teams_players') {
-    if (type === 'teams' || type === 'all') {
-      data.teams = [];
-      data.players.forEach(p => p.teamId = null);
+  customConfirm('Tem certeza? Esta ação não pode ser desfeita.', () => {
+    if (category === 'scores') {
+      if (type === 'teams' || type === 'all') data.teams.forEach(t => t.score = 0);
+      if (type === 'players' || type === 'all') data.players.forEach(p => p.score = 0);
+      showNotification('Pontuações zeradas com sucesso!', 'success');
+    } else if (category === 'niches_acts') {
+      if (type === 'niches' || type === 'all') data.niches = [];
+      if (type === 'acts' || type === 'all') data.activities = [];
+      showNotification('Nichos/Gincanas removidos!', 'success');
+    } else if (category === 'teams_players') {
+      if (type === 'teams' || type === 'all') {
+        data.teams = [];
+        data.players.forEach(p => p.teamId = null);
+      }
+      if (type === 'players' || type === 'all') data.players = [];
+      showNotification('Equipes/Jogadores removidos!', 'success');
     }
-    if (type === 'players' || type === 'all') data.players = [];
-    showNotification('Equipes/Jogadores removidos!', 'success');
-  }
 
-  save();
-  closeResetModal();
+    save();
+    closeResetModal();
+  });
 }
 
-function factoryReset() { if(confirm('APAGAR TUDO? Isso não pode ser desfeito.')) { localStorage.removeItem(KEY); location.reload(); } }
+function factoryReset() { customConfirm('APAGAR TUDO? Isso não pode ser desfeito.', () => { localStorage.removeItem(KEY); location.reload(); }); }
 
 // --- Notification Logic ---
 function showNotification(message, type = 'primary') {
