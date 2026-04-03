@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gincana Jovens 🔥</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="load()">
+  <header><h1>Gincana Jovens 🔥</h1></header>
+  <nav id="main-nav">
+    <button class="nav-btn active" onclick="switchTab('dashboard')">🏆 Placar</button>
+    <button class="nav-btn" onclick="switchTab('activities')">🎯 Gincana</button>
+    <button class="nav-btn" onclick="switchTab('manage')">👥 Equipes & Jogadores</button>
+    <button class="nav-btn" onclick="switchTab('verses')">📖 Versículos</button>
+    <button class="nav-btn" onclick="switchTab('niches')">🎯 Nichos</button>
+    <button class="nav-btn" onclick="switchTab('timer')">⏱️ Timer</button>
+    <button class="nav-btn" onclick="switchTab('config')">⚙️ Config</button>
+  </nav>
+  <main>
+    <!-- Dashboard -->
+    <section id="dashboard" class="tab-content active">
+      <div class="grid-3">
+        <div class="card">
+          <h2>🧍 Ranking Total</h2>
+          <p class="text-muted" style="font-size:0.8rem;margin-bottom:1rem;">Jogadores (Individual + Equipe)</p>
+          <div id="ranking-total"></div>
+        </div>
+        <div class="card">
+          <h2>👥 Ranking de Equipes</h2>
+          <p class="text-muted" style="font-size:0.8rem;margin-bottom:1rem;">Apenas pontos da equipe</p>
+          <div id="ranking-teams"></div>
+        </div>
+        <div class="card">
+          <h2>🧑 Ranking Individual</h2>
+          <p class="text-muted" style="font-size:0.8rem;margin-bottom:1rem;">Apenas pontos individuais</p>
+          <div id="ranking-individual"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Activities (Gincana) -->
+    <section id="activities" class="tab-content">
+      <div id="activities-list-view">
+        <div class="grid-2">
+          <div class="card">
+            <h2>➕ Nova Gincana</h2>
+            <form onsubmit="addActivity(event)">
+              <div class="form-group">
+                <label>Nome da Gincana</label>
+                <input type="text" id="act-name" placeholder="Ex: Espada para o Ar" required>
+              </div>
+              <div class="form-group">
+                <label>Descrição</label>
+                <textarea id="act-desc" rows="2" placeholder="Como funciona a gincana..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Tipo de Pontuação</label>
+                <select id="act-type" required>
+                  <option value="team">👥 Equipe (Pontos vão para a equipe)</option>
+                  <option value="individual">🧑 Individual (Pontos vão para o jogador)</option>
+                </select>
+              </div>
+              <div class="flex gap-1">
+                <button type="submit" class="btn btn-primary">Criar Gincana</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="suggestGincana()">💡 Sugerir Ideia</button>
+              </div>
+            </form>
+          </div>
+          <div class="card">
+            <h2>🎯 Gincanas Cadastradas</h2>
+            <div id="activities-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Execution View -->
+      <div id="activity-execution-view" style="display: none;">
+        <div class="card mb-1">
+          <button class="btn btn-outline btn-sm mb-1" onclick="closeActivity()">⬅ Voltar</button>
+          <h2 id="exec-act-name" style="color:var(--primary); font-size: 1.8rem;"></h2>
+          <p id="exec-act-desc" class="text-muted mb-1"></p>
+          
+          <div id="exec-setup">
+            <h3 class="mt-1 mb-1">Selecione os Participantes:</h3>
+            <div id="exec-participants-list" class="grid-2 mb-1"></div>
+            <button class="btn btn-primary btn-lg" onclick="startActivityExecution()">▶ Iniciar Gincana</button>
+          </div>
+          
+          <div id="exec-run" style="display: none;">
+            <div id="exec-active-participants" class="grid-2 mt-1"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Manage -->
+    <section id="manage" class="tab-content">
+      <div class="grid-2">
+        <div class="card">
+          <h2>➕ Nova Equipe</h2>
+          <form onsubmit="addTeam(event)">
+            <div class="form-group"><label>Nome</label><input type="text" id="team-name" required></div>
+            <div class="form-group"><label>Cor</label><input type="color" id="team-color" value="#f97316" style="height:40px;padding:2px"></div>
+            <button type="submit" class="btn btn-primary">Adicionar Equipe</button>
+          </form>
+          <h3 class="mt-1 mb-1">Equipes</h3><div id="teams-list"></div>
+        </div>
+        <div class="card">
+          <h2>👤 Novo Jogador</h2>
+          <form onsubmit="addPlayer(event)">
+            <div class="form-group"><label>Nome</label><input type="text" id="player-name" required></div>
+            <div class="form-group"><label>Equipe</label><select id="player-team"><option value="">Individual</option></select></div>
+            <button type="submit" class="btn btn-secondary">Adicionar Jogador</button>
+          </form>
+          <h3 class="mt-1 mb-1">Jogadores</h3><div id="players-list"></div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Verses -->
+    <section id="verses" class="tab-content">
+      <div class="card text-center mb-1">
+        <h2>🎲 Sorteio de Versículos</h2>
+        <div class="flex gap-1 justify-center" style="justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-primary btn-lg" onclick="drawVerse()">SORTEAR VERSÍCULO</button>
+          <button class="btn btn-outline btn-sm" onclick="openInputM()">🎁 Gerar Versículos (Demo)</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>➕ Novo Versículo</h2>
+        <form onsubmit="addVerse(event)">
+          <div class="form-group"><label>Referência</label><input type="text" id="verse-ref" required></div>
+          <div class="form-group"><label>Texto</label><textarea id="verse-text" required rows="3"></textarea></div>
+          <button type="submit" class="btn btn-secondary">Salvar</button>
+        </form>
+        <h3 class="mt-1 mb-1">Lista</h3><div id="verses-list"></div>
+      </div>
+    </section>
+
+    <!-- Niches -->
+    <section id="niches" class="tab-content">
+      <div class="card text-center mb-1">
+        <h2>🎲 Sorteio por Nicho</h2>
+        <div class="form-group" style="max-width:300px;margin:0 auto 1rem;"><select id="draw-niche-select"></select></div>
+        <div class="flex gap-1 justify-center" style="justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+          <button class="btn btn-primary btn-lg" onclick="drawNicheItem()">SORTEAR ITEM</button>
+          <button class="btn btn-outline btn-sm" onclick="openNicheDemoModal()">🎁 Gerar Nicho (Demo)</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h2>➕ Novo Nicho</h2>
+          <form onsubmit="addNiche(event)">
+            <div class="form-group"><label>Nome</label><input type="text" id="niche-name" required></div>
+            <button type="submit" class="btn btn-secondary">Criar Nicho</button>
+          </form>
+          <h3 class="mt-1 mb-1">Nichos</h3><div id="niches-list"></div>
+        </div>
+        <div class="card">
+          <h2>➕ Adicionar Item</h2>
+          <form onsubmit="addNicheItem(event)">
+            <div class="form-group"><label>Nicho</label><select id="item-niche-select" required></select></div>
+            <div class="form-group"><label>Nome do Item</label><input type="text" id="item-name" required></div>
+            <button type="submit" class="btn btn-secondary">Adicionar Item</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timer -->
+    <section id="timer" class="tab-content">
+      <div class="card text-center">
+        <h2>⏱️ Cronômetro</h2>
+        <div class="timer-display" id="timer-display">00:00</div>
+        <div class="timer-controls">
+          <button class="btn btn-secondary btn-sm" onclick="startTimer()" id="btn-start">▶ Iniciar</button>
+          <button class="btn btn-outline btn-sm" onclick="pauseTimer()" id="btn-pause">⏸ Pausar</button>
+          <button class="btn btn-danger btn-sm" onclick="resetTimer()">⏹ Resetar</button>
+        </div>
+        <div class="timer-presets">
+          <button class="btn btn-outline btn-sm" onclick="setTimer(30)">30s</button>
+          <button class="btn btn-outline btn-sm" onclick="setTimer(60)">1m</button>
+          <button class="btn btn-outline btn-sm" onclick="setTimer(120)">2m</button>
+          <button class="btn btn-outline btn-sm" onclick="setTimer(300)">5m</button>
+        </div>
+        <div class="form-group" style="max-width:300px;margin:2rem auto 0;">
+          <label>Personalizado (segundos)</label>
+          <div class="flex gap-1"><input type="number" id="custom-time" min="1"><button class="btn btn-primary btn-sm" onclick="setCustomTimer()">Definir</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Config -->
+    <section id="config" class="tab-content">
+      <div class="card">
+        <h2>⚙️ Configurações e Limpeza</h2>
+        
+        <div class="list-item mt-1">
+          <div class="item-info"><h3>Zerar Pontuações</h3><p>Zera os pontos de equipes, jogadores ou ambos.</p></div>
+          <button class="btn btn-outline btn-sm" onclick="openResetModal('scores')">Zerar</button>
+        </div>
+
+        <div class="list-item">
+          <div class="item-info"><h3>Zerar Nichos/Gincanas</h3><p>Remove todos os nichos, gincanas ou ambos.</p></div>
+          <button class="btn btn-outline btn-sm" onclick="openResetModal('niches_acts')">Zerar</button>
+        </div>
+
+        <div class="list-item">
+          <div class="item-info"><h3>Zerar Equipes/Jogadores</h3><p>Remove todas as equipes, jogadores ou ambos.</p></div>
+          <button class="btn btn-outline btn-sm" onclick="openResetModal('teams_players')">Zerar</button>
+        </div>
+
+        <div class="list-item" style="border-color:var(--danger); margin-top: 2rem;">
+          <div class="item-info"><h3 style="color:var(--danger);">Apagar Tudo</h3><p>Limpa todos os dados do sistema. Irreversível!</p></div>
+          <button class="btn btn-danger btn-sm" onclick="factoryReset()">Apagar Tudo</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal-content">
+      <h2 style="color:var(--primary);margin-bottom:1rem;" id="modal-title">Sorteio</h2>
+      <div style="font-size:1.2rem;margin-bottom:1rem;" id="modal-body"></div>
+      <div style="color:var(--gold);font-weight:bold;" id="modal-ref"></div>
+      <button class="btn btn-primary mt-1" onclick="closeModal()">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Modal de Entrada (Custom Prompt) -->
+  <div class="modal-overlay" id="input-modal">
+    <div class="modal-content">
+      <h2 style="color:var(--primary);margin-bottom:1rem;">Quantos versículos?</h2>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">Escolha uma quantidade entre 1 e 50.</p>
+      <div class="form-group">
+        <input type="number" id="input-modal-field" min="1" max="50" value="10" style="font-size: 1.5rem; text-align: center;">
+      </div>
+      <div class="flex gap-1">
+        <button class="btn btn-primary" id="input-modal-confirm" style="flex: 1;">Gerar</button>
+        <button class="btn btn-outline" onclick="closeInputM()" style="flex: 1;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
+  <!-- Modal de Reset -->
+  <div class="modal-overlay" id="reset-modal">
+    <div class="modal-content">
+      <h2 style="color:var(--danger);margin-bottom:1rem;" id="reset-modal-title">Zerar Dados</h2>
+      <p style="margin-bottom: 1.5rem; color: var(--text-muted);" id="reset-modal-desc">Escolha o que deseja zerar:</p>
+      
+      <div id="reset-options" class="flex flex-col gap-1" style="flex-direction: column; margin-bottom: 1.5rem;">
+        <!-- Options will be injected here -->
+      </div>
+
+      <div class="flex gap-1">
+        <button class="btn btn-outline" onclick="closeResetModal()" style="flex: 1;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Nicho Demo -->
+  <div class="modal-overlay" id="niche-demo-modal">
+    <div class="modal-content">
+      <h2 style="color:var(--primary);margin-bottom:1rem;">Gerar Nicho Demo</h2>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">Escolha uma categoria para gerar 30 itens aleatórios.</p>
+      <div class="form-group">
+        <select id="niche-demo-category" style="font-size: 1.2rem; padding: 0.5rem; width: 100%; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px;">
+          <option value="personagens">👤 Personagens Bíblicos</option>
+          <option value="passagens">📖 Passagens Bíblicas</option>
+          <option value="louvores">🎵 Louvores/Hinos</option>
+          <option value="objetos">🏺 Objetos Bíblicos</option>
+        </select>
+      </div>
+      <div class="flex gap-1">
+        <button class="btn btn-primary" onclick="confirmNicheDemo()" style="flex: 1;">Gerar</button>
+        <button class="btn btn-outline" onclick="closeNicheDemoModal()" style="flex: 1;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
